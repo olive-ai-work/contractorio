@@ -1,0 +1,138 @@
+{
+  "patient": {
+    "firstName": "PATIENT_FIRST_NAME",
+    "lastName": "PATIENT_LAST_NAME",
+    "middleName": "",
+    "dateOfBirth": "PATIENT_DOB",
+    "memberID": "MEMBER_ID",
+    "gender": "M",
+    "accountNumber": "ACC_NUM",
+    "address": {
+      "line1": "PATIENT_ADDR1",
+      "line2": "PATIENT_ADDR2",
+      "zip": "PATIENT_ZIP",
+      "state": "PATIENT_ST",
+      "city": "PATIENT_CITY"
+    }
+  },
+  "subscriber": {
+    "firstName": "SUBSCRIBER_FIRST_NAME",
+    "lastName": "SUBSCRIBER_LAST_NAME",
+    "middleName": "",
+    "dateOfBirth": "SUBSCRIBER_DOB",
+    "subscriberID": "MEMBER_ID",
+    "gender": "F",
+    "groupNumber": "GROUP_NUM",
+    "address": {
+      "line1": "SUBSCRIBER_ADDR1",
+      "line2": "SUBSCRIBER_ADDR2",
+      "zip": "SUBSCRIBER_ZIP",
+      "state": "SUBSCRIBER_ST",
+      "city": "SUBSCRIBER_CITY"
+    }
+  },
+  "payer": {
+    "plan": {
+      "name": "PLAN_NAME",
+      "planID": "PLAN_ID",
+      "relationshipToSubscriber": {
+        "value": "19",
+        "description": ""
+      }
+    }
+  },
+  "provider": {
+    "type": "REQUESTING",
+    "firstName": "PROV_FIRST",
+    "lastName": "PROV_LAST",
+    "NPI": "PROV_NPI",
+    "TIN": "PROV_TIN",
+    "MPIN": "PROV_MPIN",
+    "contactInformation": {
+      "contactName": "CONTACT_NAME",
+      "address": {
+        "line1": "PROV_ADDR1",
+        "line2": "PROV_ADDR2",
+        "zip": "PROV_ZIP",
+        "state": "PROV_ST",
+        "city": "PROV_CITY"
+      },
+      "phone": "00055512345"
+    }
+  },
+  "facility": {
+    "type": "FACILITY",
+    "name": "FACILITY_NAME",
+    "contactInformation": {
+      "address": {
+        "line1": "FACILITY_ADDR1",
+        "line2": "FACILITY_ADDR2",
+        "zip": "FACILITY_ZIP",
+        "state": "FACILITY_ST",
+        "city": "FACILITY_CITY"
+      }
+    },
+    "TIN": "FACILITY_TIN",
+    "placeOfServiceCode": {
+      "value": "22",
+      "description": ""
+    },
+    "NPI": "FACILITY_NPI",
+    "MPIN": "FACILITY_MPIN"
+  },
+  "encounter": {
+    "admitDate": "ADMIT_DATE",
+    "dischargeDate": "DISCHARGE_DATE"
+  },
+  "authorization": {
+    "referralID": "REF_NUM",
+    "trackingNumber": "TRACK_NUM",
+    "dateOfService": "DOS",
+    "procedureCodes": [
+      {
+        "value": "77051",
+        "quantity": "1",
+        "quantityType": "UN"
+      },
+      {
+        "value": "12345",
+        "quantity": "1",
+        "quantityType": "UN"
+      },
+      {
+        "value": "77052",
+        "quantity": "1",
+        "quantityType": "UN"
+      }
+    ],
+    "diagnosisCodes": [
+      {
+        "value": "DX1",
+        "description": "",
+        "isPrimary": false
+      },
+      {
+        "value": "DX2",
+        "description": "",
+        "isPrimary": false
+      },
+      {
+        "value": "DX3",
+        "description": "",
+        "isPrimary": false
+      }
+    ],
+    "requestTypeCode": {
+      "value": "HS",
+      "description": ""
+    },
+    "serviceTypeCode": {
+      "value": "1",
+      "description": ""
+    },
+    "certificationTypeCode": {
+      "value": "I",
+      "description": ""
+    }
+  }
+}
