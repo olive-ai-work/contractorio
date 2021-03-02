@@ -79,5 +79,6 @@ module.exports = {
   randoAddress,
   randoDate,
   randoLetter,
-  randoName
+  randoName,
+  randoNumber
 }

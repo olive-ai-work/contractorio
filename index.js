@@ -183,9 +183,13 @@ function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
     }
   }, range(0, count))
 
-  fs.writeJSON(path.join('output', `${today.getTime()}.json`), results).then(() => {
-    console.timeEnd('Generating Procedural ODC')
-  })
+  fs.writeJSON(path.join('output', `${today.getTime()}.json`), results)
+    .then(() => {
+      console.timeEnd('Generating Procedural ODC')
+    })
+    .catch(console.error)
 }
+
+contractorio()
 
 module.exports = contractorio
