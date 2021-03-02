@@ -27,7 +27,7 @@ function getCodeAndDesc (data) {
   }
 }
 
-// Uses probability to build out a member random length member id
+// Uses probability to build out a random length member id
 function createID (memberIDLens, noAlpha) {
   const len = memberIDLens[randoNumber(memberIDLens.length)]
 
