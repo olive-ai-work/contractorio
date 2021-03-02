@@ -19,8 +19,8 @@ Ontop of that Contractorio takes in a set of options to fine tune smaller detail
 - `dischargeDateFormat` the format you want the `dischargeDate` to be in
 - `dateOfServiceFormat` the forma you want the `dateOfService` to be in
 - `matchPatient` should the `subscriber` match the patient thats been generated? (besides subscriber specific information)
-- `procCodesRange` how many procedure codes do you want to generate?
-- `diagnosisCodesRange` how many diagnosis codes do you want to generate?
+- `procCodesRange` Whats the minimum number and maximum number of procedure codes you want to generate?
+- `diagnosisCodesRange` Whats the minimum number and maximum number of diagnosis codes you want to generate?
 
 Here are the defaults:
 
