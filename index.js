@@ -190,6 +190,4 @@ function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
     .catch(console.error)
 }
 
-contractorio()
-
 module.exports = contractorio
