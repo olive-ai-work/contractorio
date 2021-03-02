@@ -1,6 +1,6 @@
 {
   "name": "contractorio",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,8 @@
     "clean": "rimraf output/*.json"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Dustin Hershman",
+  "license": "MIT",
   "dependencies": {
     "fs-extra": "^9.1.0",
     "kyanite": "^1.5.0"
