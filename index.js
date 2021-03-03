@@ -159,7 +159,8 @@ function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
     dateOfServiceFormat: 'M/D/Y',
     matchPatient: false,
     procCodesRange: [2, 4],
-    diagnosisCodesRange: [2, 4]
+    diagnosisCodesRange: [2, 4],
+    output: './output'
   }, userOpts)
 
   console.time('Generating Procedural ODC')
@@ -183,10 +184,9 @@ function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
     }
   }, range(0, count))
 
-  fs.writeJSON(path.join('output', `${today.getTime()}.json`), results)
-    .then(() => {
-      console.timeEnd('Generating Procedural ODC')
-    })
+  fs.mkdirp(opts.output)
+    .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), results))
+    .then(() => console.timeEnd('Generating Procedural ODC'))
     .catch(console.error)
 }
 
