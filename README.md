@@ -25,6 +25,7 @@ Ontop of that Contractorio takes in a set of options to fine tune smaller detail
 - `matchPatient` should the `subscriber` match the patient thats been generated? (besides subscriber specific information)
 - `procCodesRange` Whats the minimum number and maximum number of procedure codes you want to generate?
 - `diagnosisCodesRange` Whats the minimum number and maximum number of diagnosis codes you want to generate?
+- `output` The folder you want the output of contractorio to go to
 
 Here are the defaults:
 
@@ -36,7 +37,8 @@ Here are the defaults:
   dateOfServiceFormat: 'M/D/Y',
   matchPatient: false,
   procCodesRange: [2, 4],
-  diagnosisCodesRange: [2, 4]
+  diagnosisCodesRange: [2, 4],
+  output: './output'
 }
 ```
 
