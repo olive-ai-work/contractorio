@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
+    "seedrandom": "^3.0.5",
     "standard": "^16.0.3"
   }
 }
