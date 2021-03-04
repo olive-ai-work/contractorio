@@ -46,8 +46,8 @@ function createID (memberIDLens, noAlpha) {
   return ID
 }
 
-function generatePatient (tables, { dobFormat }) {
-  const { date, age } = randoDate(dobFormat, tables)
+function generatePatient (tables, { dateFormat }) {
+  const { date, age } = randoDate(dateFormat, tables)
   const { firstName, lastName } = randoName(tables)
 
   return {
@@ -138,29 +138,26 @@ function createCodes (tables, [min, max], isDiag) {
   })
 }
 
-function generateAuthorization ({ dateOfServiceFormat, procCodesRange, diagnosisCodesRange }, tables) {
+function generateAuthorization ({ dateFormat, range }, tables) {
   return {
     referralID: createID([4], true),
     trackingNumber: createID([9]),
-    dateOfService: randoDate(dateOfServiceFormat, tables).date,
-    procedureCodes: createCodes(tables, procCodesRange, false),
-    diagnosisCodes: createCodes(tables, diagnosisCodesRange, true),
+    dateOfService: randoDate(dateFormat, tables).date,
+    procedureCodes: createCodes(tables, range, false),
+    diagnosisCodes: createCodes(tables, range, true),
     requestTypeCode: getCodeAndDesc(tables.requestTypeCodes),
     serviceTypeCode: getCodeAndDesc(tables.serviceTypeCodes),
     certificationTypeCode: getCodeAndDesc(tables.certificationTypeCodes)
   }
 }
 
-function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
+function contractorio (userOpts = {}, userProcedural = {}) {
   const config = withDefaults(defaultTables, userProcedural)
   const opts = withDefaults({
-    dobFormat: 'M/D/Y',
-    admitDateFormat: 'M/D/Y',
-    dischargeDateFormat: 'M/D/Y',
-    dateOfServiceFormat: 'M/D/Y',
+    dateFormat: 'Y-M-D',
+    count: 1,
     matchPatient: false,
-    procCodesRange: [2, 4],
-    diagnosisCodesRange: [2, 4],
+    range: [2, 4],
     output: './output'
   }, userOpts)
 
@@ -178,12 +175,12 @@ function contractorio (userOpts = {}, count = 1, userProcedural = {}) {
       provider: generateProvider(config),
       facility: generateFacility(config),
       encounter: {
-        admitDate: randoDate(opts.admitDateFormat, config).date,
-        dischargeDate: randoDate(opts.dischargeDateFormat, config).date
+        admitDate: randoDate(opts.dateFormat, config).date,
+        dischargeDate: randoDate(opts.dateFormat, config).date
       },
       authorization: generateAuthorization(opts, config)
     }
-  }, range(0, count))
+  }, range(0, opts.count))
 
   fs.mkdirp(opts.output)
     .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), results))

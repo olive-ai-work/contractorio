@@ -1,0 +1,33 @@
+#! /usr/bin/env node
+const { withDefaults } = require('kyanite')
+const fs = require('fs-extra')
+const parsedArgs = require('minimist')(process.argv.slice(2), {
+  alias: {
+    m: 'matchPatient',
+    o: 'output',
+    t: 'tables',
+    f: 'dateFormat',
+    c: 'count',
+    r: 'range',
+    v: 'version'
+  }
+})
+const { version } = require('../package.json')
+const defaultTables = require('../defaults.json')
+const contractorio = require('../')
+
+if (parsedArgs.version) {
+  console.log(version)
+} else {
+  let tables = defaultTables
+
+  if (parsedArgs.tables) {
+    tables = withDefaults(defaultTables, fs.readJsonSync(parsedArgs.tables))
+  }
+
+  if (parsedArgs.range) {
+    parsedArgs.range = parsedArgs.range.split(',')
+  }
+
+  contractorio(parsedArgs, tables)
+}

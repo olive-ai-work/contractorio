@@ -13,16 +13,31 @@ This tool is built to give you data, as much as you want!
 - Clone this Repo
 - `cd` into the repo
 - Run `npm i`
+
+IF using API:
+
 - Create a index.js somewhere
 - Import this and call the function, run your file using node
 
-API usage is pretty easy:
+IF using CLI:
+
+- `cd` into the contractorio folder
+- Run `npm ln`
+
+API usage:
 ```js
 import contractorio from './Where/you/cloned/the/repo'
 
 contractorio()
 ```
 Done! Now run node on your js file and see that sweet sweet made up data.
+
+CLI usage:
+```cli
+contractorio
+# with some options
+contractorio -c 5 -f "Y/M/D" -r "2,5"
+```
 
 You can tweak things by either replacing/updating tables in the `default.json`, or you can tweak some of the options below!
 
@@ -34,28 +49,36 @@ The procedural generation of patients ships out of the box, its all handled by t
 
 Simply pass in your own object/json that has the same name as one of the tables in `defaults.json` and it will be overwritten by your own table! Don't worry, all of the other tables will be kept intact, so they should still work when generating!
 
+> It's important to note that contractorio can work out of the box without any options provided simply call it and you get data
+
 Ontop of that Contractorio takes in a set of options to fine tune smaller details (like numbers and date formats) Here's all that it takes:
 
-- `dobFormat` the format you want the date of birth to be in
-- `admitDateFormat` the format you want the `admitDate` to be in
-- `dischargeDateFormat` the format you want the `dischargeDate` to be in
-- `dateOfServiceFormat` the forma you want the `dateOfService` to be in
+> As of v0.2.0 contractorio also works as a CLI tool
+
+- `dateFormat` the format you want the dates to be in
+- `count` how many records do you want to generate?
 - `matchPatient` should the `subscriber` match the patient thats been generated? (besides subscriber specific information)
-- `procCodesRange` Whats the minimum number and maximum number of procedure codes you want to generate?
-- `diagnosisCodesRange` Whats the minimum number and maximum number of diagnosis codes you want to generate?
+- `range` Whats the minimum and maximum range when generating lists of data like procedure codes?
 - `output` The folder you want the output of contractorio to go to
+
+If you're using contractorio as a CLI tool then here are your options:
+
+- `-f`, `--dateFormat` the format you want the dates to be in. e.g: `-f "Y/M/D"`
+- `-c`, `--count` how many records do you want to generate? e.g: `-c 5`
+- `-m`, `--matchPatient` should the `subscriber` match the patient thats been generated? (besides subscriber specific information)
+- `-r`, `--range` Whats the minimum and maximum range when generating lists of data like procedure codes? e.g: `-r "2,5"`
+- `-o`, `--output` The folder you want the output of contractorio to go to. e.g: `-o output/something`
+- `-t`, `--tables` The path to the json file with your custom tables in it to overwrite certain tables in defaults. e.g: `-t pathto/mytables.json`
+- `-v`, `--version` Display the current version of contractorio you are using!
 
 Here are the defaults:
 
 ```js
 {
-  dobFormat: 'M/D/Y',
-  admitDateFormat: 'M/D/Y',
-  dischargeDateFormat: 'M/D/Y',
-  dateOfServiceFormat: 'M/D/Y',
+  dateFormat: 'Y-M-D',
+  count: 1,
   matchPatient: false,
-  procCodesRange: [2, 4],
-  diagnosisCodesRange: [2, 4],
+  range: [2, 4],
   output: './output'
 }
 ```
@@ -68,8 +91,37 @@ Example: If you only pass in `{ matchPatient: true }` the rest of the options wi
 
 So formatting dates is pretty easy in Contractorio, simply use `M` for month, `D` for day, and `Y` for year. Place them in any order you want, with any symbols you want, and presto!
 
-For example, passing `Y/M/D` for `dobFormat` will cause all the `dateOfBirth` values to be formatted like `1977/04/22` This is true for ALL the date format options.
+For example, passing `Y/M/D` for `dateFormat` will cause all the `date` values to be formatted like `1977/04/22`
 
-## Future
+## Overwriting Tables
 
-- Probably turn it into a CLI tool?
+You can replace ANY of the tables in contractorio with your own json, simply follow the patterns in `defaults.json` so if you wanted to overwrite the `planNames` then follow these instructions:
+
+IF using API:
+
+- Give contractorio a object with `planNames` in it with your new array/table
+
+example:
+
+```js
+const contractorio = require('where/you/cloned/repo')
+
+contractorio({}, { planNames: ['sugar', 'cool plan'] })
+```
+
+Contractorio will then replace the `planNames` table with yours!
+
+IF using CLI:
+
+- Create a JSON file
+- Put an object in said json file with `planNames` and your new table
+
+example:
+
+```json
+{
+  "planNames": ["sugar", "cool plan"]
+}
+```
+
+- Now simply attach that json file to the `-t` argument in your cli!
