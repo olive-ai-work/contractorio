@@ -14,6 +14,10 @@ function randoLetter () {
   return letters[randoNumber(letters.length)]
 }
 
+function randoProcedureCode (procedureCodes) {
+  return procedureCodes[randoNumber(procedureCodes.length)]
+}
+
 function probability (list) {
   let num = Math.random()
 
@@ -80,5 +84,6 @@ module.exports = {
   randoDate,
   randoLetter,
   randoName,
-  randoNumber
+  randoNumber,
+  randoProcedureCode
 }

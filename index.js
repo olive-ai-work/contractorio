@@ -15,7 +15,8 @@ const {
   randoDate,
   randoLetter,
   randoName,
-  randoNumber
+  randoNumber,
+  randoProcedureCode
 } = require('./_internal/random')
 
 function getCodeAndDesc (data) {
@@ -117,7 +118,7 @@ function generateFacility (tables) {
   }
 }
 
-function createCodes ([min, max], isDiag) {
+function createCodes (tables, [min, max], isDiag) {
   const count = minRandoNumber(min, max)
 
   return range(0, count).map(() => {
@@ -130,7 +131,7 @@ function createCodes ([min, max], isDiag) {
     }
 
     return {
-      value: createID([5], true),
+      value: randoProcedureCode(tables.procedureCodes),
       quantity: 1,
       quantityType: 'UN'
     }
@@ -142,8 +143,8 @@ function generateAuthorization ({ dateOfServiceFormat, procCodesRange, diagnosis
     referralID: createID([4], true),
     trackingNumber: createID([9]),
     dateOfService: randoDate(dateOfServiceFormat, tables).date,
-    procedureCodes: createCodes(procCodesRange, false),
-    diagnosisCodes: createCodes(diagnosisCodesRange, true),
+    procedureCodes: createCodes(tables, procCodesRange, false),
+    diagnosisCodes: createCodes(tables, diagnosisCodesRange, true),
     requestTypeCode: getCodeAndDesc(tables.requestTypeCodes),
     serviceTypeCode: getCodeAndDesc(tables.serviceTypeCodes),
     certificationTypeCode: getCodeAndDesc(tables.certificationTypeCodes)
