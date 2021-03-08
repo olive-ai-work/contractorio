@@ -1,9 +1,10 @@
 #! /usr/bin/env node
-const { withDefaults } = require('kyanite')
+const { amend, withDefaults } = require('kyanite')
 const fs = require('fs-extra')
 const parsedArgs = require('minimist')(process.argv.slice(2), {
   alias: {
     m: 'matchPatient',
+    s: 'seed',
     o: 'output',
     t: 'tables',
     f: 'dateFormat',
@@ -29,5 +30,5 @@ if (parsedArgs.version) {
     parsedArgs.range = parsedArgs.range.split(',')
   }
 
-  contractorio(parsedArgs, tables)
+  contractorio(amend(parsedArgs, { write: true }), tables)
 }

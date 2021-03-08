@@ -7,7 +7,9 @@ const {
   withDefaults
 } = require('kyanite')
 const fs = require('fs-extra')
+const alea = require('./_internal/alea')
 const defaultTables = require('./defaults.json')
+const { _curry2, _curry3, _curry4 } = require('./_internal/_curry')
 const {
   minRandoNumber,
   probability,
@@ -16,140 +18,210 @@ const {
   randoLetter,
   randoName,
   randoNumber,
-  randoProcedureCode
+  randomPipe,
+  getRandomItem
 } = require('./_internal/random')
 
-function getCodeAndDesc (data) {
-  const [code, desc] = data[randoNumber(data.length)]
+const getCodeAndDesc = _curry2(function getCodeAndDesc (data, seed) {
+  const [[code, desc], nextSeed] = getRandomItem(data, alea(seed).quick())
 
-  return {
+  return [{
     value: code,
     description: desc
-  }
-}
+  }, nextSeed]
+})
 
 // Uses probability to build out a random length member id
-function createID (memberIDLens, noAlpha) {
-  const len = memberIDLens[randoNumber(memberIDLens.length)]
-
+const createID = _curry3(function createID (memberIDLens, noAlpha, seed) {
+  const [len, nextSeed] = getRandomItem(memberIDLens, seed)
+  let loopSeed = nextSeed
   let ID = ''
 
   for (let i = 0; i < len; i++) {
-    ID += noAlpha
-      ? randoNumber(9)
+    const [char, newSeed] = noAlpha
+      ? randoNumber(9, loopSeed)
       : probability([
-        [randoNumber(9), 0.80],
-        [randoLetter(), 0.20]
-      ])
+        [randoNumber(9, loopSeed), 0.80],
+        [randoLetter(loopSeed), 0.20]
+      ], loopSeed)
+
+    loopSeed = newSeed
+    ID += char
   }
 
-  return ID
-}
+  return [ID, loopSeed]
+})
 
-function generatePatient (tables, { dateFormat }) {
-  const { date, age } = randoDate(dateFormat, tables)
-  const { firstName, lastName } = randoName(tables)
+function generatePatient (tables, { dateFormat }, seed) {
+  const [
+    [{ date: dateOfBirth, age }, { firstName, lastName }, gender, memberID, address, accountNumber],
+    nextSeed
+  ] = randomPipe([
+    randoDate(dateFormat, tables),
+    randoName(tables),
+    getRandomItem(tables.genders),
+    createID(tables.memberIDLens, false),
+    randoAddress(tables),
+    createID([11], false)
+  ], seed)
 
-  return {
+  return [{
     firstName,
     lastName,
     age,
-    gender: tables.genders[randoNumber(tables.genders.length)],
-    memberID: createID(tables.memberIDLens),
-    dateOfBirth: date,
-    address: randoAddress(tables),
-    accountNumber: createID([11])
-  }
+    gender,
+    memberID,
+    address,
+    accountNumber,
+    dateOfBirth
+  }, nextSeed]
 }
 
-function generateSubscriber (tables, opts, patient) {
+const generateSubscriber = _curry4(function generateSubscriber (tables, opts, patient, seed) {
+  const [groupNumber, groupSeed] = createID([9], false, seed)
+
   if (opts.matchPatient) {
-    return amend(
+    return [amend(
       omit(['memberID', 'accountNumber', 'age'], patient),
-      { subscriberID: patient.memberID, groupNumber: createID([9]) }
-    )
+      { subscriberID: patient.memberID, groupNumber }
+    ), alea(seed).quick()]
   }
 
-  return amend(
-    omit(['memberID', 'accountNumber', 'age'], generatePatient(tables, opts)),
-    { subscriberID: patient.memberID, groupNumber: createID([9]) })
-}
+  const [newPatient, patientSeed] = generatePatient(tables, opts, groupSeed)
 
-function generatePlan ({ planIDLens, planNames }) {
-  return {
-    planID: createID(planIDLens),
-    name: planNames[randoNumber(planNames.length)],
+  return [amend(
+    omit(['memberID', 'accountNumber', 'age'], newPatient),
+    { subscriberID: patient.memberID, groupNumber }), alea(patientSeed).quick()]
+})
+
+const generatePlan = _curry2(function generatePlan ({ planIDLens, planNames }, seed) {
+  const [[planID, name, relationValue], nextSeed] = randomPipe([
+    createID(planIDLens, false),
+    getRandomItem(planNames),
+    randoNumber(20)
+  ], seed)
+
+  return [{
+    planID,
+    name,
     relationshipToSubscriber: {
-      value: randoNumber(20),
+      value: relationValue,
       description: ''
     }
-  }
-}
+  }, nextSeed]
+})
 
-function generateProvider (tables) {
-  const { firstName, lastName } = randoName(tables)
+const generateProvider = _curry2(function generateProvider (tables, seed) {
+  const [[{ firstName, lastName }, type, TIN, NPI, address, phone], nextSeed] = randomPipe([
+    randoName(tables),
+    getRandomItem(tables.providerTypes),
+    createID([9], true),
+    createID([10], true),
+    randoAddress(tables),
+    createID([11], true)
+  ], seed)
 
-  return {
+  return [{
     firstName,
     lastName,
-    type: tables.providerTypes[randoNumber(tables.providerTypes.length)],
-    TIN: createID([9], true),
-    NPI: createID([10], true),
+    type,
+    TIN,
+    NPI,
     MPIN: '',
     contactInformation: {
       contactType: 'IC',
       contactName: '',
-      address: randoAddress(tables),
-      phone: createID([11], true)
+      address,
+      phone
     }
-  }
-}
+  }, nextSeed]
+})
 
-function generateFacility (tables) {
-  return {
-    name: tables.facilityNames[randoNumber(tables.facilityNames.length)],
+const generateFacility = _curry2(function generateFacility (tables, seed) {
+  const [[name, address, TIN, NPI, placeOfServiceCode], nextSeed] = randomPipe([
+    getRandomItem(tables.facilityNames),
+    randoAddress(tables),
+    createID([9], true),
+    createID([10], true),
+    getCodeAndDesc(tables.placeOfService)
+  ], seed)
+
+  return [{
+    name,
     contactInformation: {
-      address: randoAddress(tables)
+      address
     },
-    TIN: createID([9], true),
-    NPI: createID([10], true),
+    TIN,
+    NPI,
     MPIN: '',
-    placeOfServiceCode: getCodeAndDesc(tables.placeOfService)
-  }
-}
+    placeOfServiceCode
+  }, nextSeed]
+})
 
-function createCodes (tables, [min, max], isDiag) {
-  const count = minRandoNumber(min, max)
+const createCodes = _curry4(function createCodes (tables, [min, max], isDiag, seed) {
+  const [count, countSeed] = minRandoNumber(min, max, seed)
+  let currSeed = countSeed
 
-  return range(0, count).map(() => {
+  return [range(0, count).map(() => {
     if (isDiag) {
+      const [[letter, id, isPrimary], newSeed] = randomPipe([
+        randoLetter,
+        createID([4], true),
+        getRandomItem([true, false])
+      ], currSeed)
+
+      currSeed = newSeed
+
       return {
-        value: `${randoLetter()}${createID([4], true)}`,
+        value: `${letter}${id}`,
         description: '',
-        isPrimary: [true, false][randoNumber(2)]
+        isPrimary
       }
     }
+    const [value, newSeed] = getRandomItem(tables.procedureCodes, currSeed)
+
+    currSeed = newSeed
 
     return {
-      value: randoProcedureCode(tables.procedureCodes),
+      value,
       quantity: 1,
       quantityType: 'UN'
     }
-  })
-}
+  }), currSeed]
+})
 
-function generateAuthorization ({ dateFormat, range }, tables) {
-  return {
-    referralID: createID([4], true),
-    trackingNumber: createID([9]),
-    dateOfService: randoDate(dateFormat, tables).date,
-    procedureCodes: createCodes(tables, range, false),
-    diagnosisCodes: createCodes(tables, range, true),
-    requestTypeCode: getCodeAndDesc(tables.requestTypeCodes),
-    serviceTypeCode: getCodeAndDesc(tables.serviceTypeCodes),
-    certificationTypeCode: getCodeAndDesc(tables.certificationTypeCodes)
-  }
-}
+const generateAuthorization = _curry3(function generateAuthorization ({ dateFormat, range }, tables, seed) {
+  const [[
+    referralID,
+    trackingNumber,
+    dateOfService,
+    procedureCodes,
+    diagnosisCodes,
+    requestTypeCode,
+    serviceTypeCode,
+    certificationTypeCode
+  ], nextSeed] = randomPipe([
+    createID([4], true),
+    createID([9], false),
+    randoDate(dateFormat, tables),
+    createCodes(tables, range, false),
+    createCodes(tables, range, true),
+    getCodeAndDesc(tables.requestTypeCodes),
+    getCodeAndDesc(tables.serviceTypeCodes),
+    getCodeAndDesc(tables.certificationTypeCodes)
+  ], seed)
+
+  return [{
+    referralID,
+    trackingNumber,
+    dateOfService: dateOfService.date,
+    procedureCodes,
+    diagnosisCodes,
+    requestTypeCode,
+    serviceTypeCode,
+    certificationTypeCode
+  }, nextSeed]
+})
 
 function contractorio (userOpts = {}, userProcedural = {}) {
   const config = withDefaults(defaultTables, userProcedural)
@@ -157,35 +229,54 @@ function contractorio (userOpts = {}, userProcedural = {}) {
     dateFormat: 'Y-M-D',
     count: 1,
     matchPatient: false,
+    write: true,
     range: [2, 4],
+    seed: alea(Math.random()).int32(),
     output: './output'
   }, userOpts)
-
-  console.time('Generating Procedural ODC')
+  let currSeed = opts.seed
+  const dateFn = randoDate(opts.dateFormat, config)
   const today = new Date()
   const results = map(() => {
-    const patient = generatePatient(config, opts)
+    const [[admitDate, dischargeDate], nextSeed] = randomPipe([
+      dateFn,
+      dateFn
+    ], alea(currSeed).quick())
+    const [patient, patientSeed] = generatePatient(config, opts, nextSeed)
+    const [[subscriber, plan, provider, facility, authorization], finalSeed] = randomPipe([
+      generateSubscriber(config, opts, patient),
+      generatePlan(config),
+      generateProvider(config),
+      generateFacility(config),
+      generateAuthorization(opts, config)
+    ], patientSeed)
+
+    currSeed = finalSeed
 
     return {
       patient,
-      subscriber: generateSubscriber(config, opts, patient),
+      subscriber,
       payer: {
-        plan: generatePlan(config)
+        plan
       },
-      provider: generateProvider(config),
-      facility: generateFacility(config),
+      provider,
+      facility,
       encounter: {
-        admitDate: randoDate(opts.dateFormat, config).date,
-        dischargeDate: randoDate(opts.dateFormat, config).date
+        admitDate: admitDate.date,
+        dischargeDate: dischargeDate.date
       },
-      authorization: generateAuthorization(opts, config)
+      authorization
     }
   }, range(0, opts.count))
 
-  fs.mkdirp(opts.output)
-    .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), results))
-    .then(() => console.timeEnd('Generating Procedural ODC'))
-    .catch(console.error)
+  // Write the output to a json
+  if (opts.write) {
+    fs.mkdirp(opts.output)
+      .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), { seed: opts.seed, results }))
+      .catch(console.error)
+  }
+
+  return { seed: opts.seed, results }
 }
 
 module.exports = contractorio

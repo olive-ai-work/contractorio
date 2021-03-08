@@ -1,14 +1,16 @@
 {
   "name": "contractorio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "",
   "main": "index.js",
   "bin": {
     "contractorio": "bin/contractorio"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf output/*.json"
+    "test": "tape tests/*.js | tap-spec",
+    "clean": "rimraf output/*.json && rimraf debug/*.json",
+    "lint": "standard | snazzy",
+    "lint:fix": "standard --fix | snazzy"
   },
   "keywords": [],
   "author": "Dustin Hershman",
@@ -20,6 +22,10 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "standard": "^16.0.3"
+    "seedrandom": "^3.0.5",
+    "snazzy": "^9.0.0",
+    "standard": "^16.0.3",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.2.2"
   }
 }
