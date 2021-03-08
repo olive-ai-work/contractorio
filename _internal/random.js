@@ -40,8 +40,8 @@ function randoLetter (seed) {
   return getRandomItem(letters, nextSeed)
 }
 
-function probability (list) {
-  let num = Math.random()
+function probability (list, seed) {
+  let num = alea(seed).quick()
 
   for (const [item, prob] of list) {
     num = num - prob
@@ -66,11 +66,12 @@ function calcAge (month, day, year) {
 }
 
 function randoDate (format, { months, days, years }, seed) {
+  const dateSeed = alea(seed).quick()
   const [[month, day, year], nextSeed] = randomPipe([
     getRandomItem(months),
     getRandomItem(days),
     getRandomItem(years)
-  ], seed)
+  ], dateSeed)
 
   return [{
     date: pipe([
@@ -83,10 +84,11 @@ function randoDate (format, { months, days, years }, seed) {
 }
 
 function randoAddressLine ({ streetNumbers, streetNames }, seed) {
+  const addressSeed = alea(seed).quick()
   const [acc, nextSeed] = randomPipe([
     getRandomItem(streetNumbers),
     getRandomItem(streetNames)
-  ], seed)
+  ], addressSeed)
 
   return [
     `${acc[0]} ${acc[1]}`,
@@ -95,7 +97,8 @@ function randoAddressLine ({ streetNumbers, streetNames }, seed) {
 }
 
 function randoAddress ({ buildingInfo, streetNames, cityNames, streetNumbers, states, zips }, seed) {
-  const [line1, lineSeed] = randoAddressLine({ streetNames, streetNumbers }, seed)
+  const addressSeed = alea(seed).quick()
+  const [line1, lineSeed] = randoAddressLine({ streetNames, streetNumbers }, addressSeed)
   const [[line2, zip, state, city], nextSeed] = randomPipe([
     getRandomItem(buildingInfo),
     getRandomItem(zips),
@@ -113,10 +116,11 @@ function randoAddress ({ buildingInfo, streetNames, cityNames, streetNumbers, st
 }
 
 function randoName (tables, seed) {
+  const nameSeed = alea(seed).quick()
   const [[firstName, lastName], nextSeed] = randomPipe([
     getRandomItem(tables.firstNames),
     getRandomItem(tables.lastNames)
-  ], seed)
+  ], nameSeed)
 
   return [{
     firstName,

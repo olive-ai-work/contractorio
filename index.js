@@ -38,27 +38,21 @@ const createID = _curry3(function createID (memberIDLens, noAlpha, seed) {
   let ID = ''
 
   for (let i = 0; i < len; i++) {
-    const acc = noAlpha
+    const [char, newSeed] = noAlpha
       ? randoNumber(9, loopSeed)
       : probability([
         [randoNumber(9, loopSeed), 0.80],
         [randoLetter(loopSeed), 0.20]
       ], loopSeed)
 
-    loopSeed = acc[1]
-    ID += acc[0]
+    loopSeed = newSeed
+    ID += char
   }
 
   return [ID, loopSeed]
 })
 
 function generatePatient (tables, { dateFormat }, seed) {
-  console.log('SEED IN GENPAT', seed)
-
-  console.log(createID([11], false, seed))
-  console.log(createID([11], false, seed))
-  console.log(createID([11], false, seed))
-
   const [
     [{ date: dateOfBirth, age }, { firstName, lastName }, gender, memberID, address, accountNumber],
     nextSeed
@@ -70,8 +64,6 @@ function generatePatient (tables, { dateFormat }, seed) {
     randoAddress(tables),
     createID([11], false)
   ], seed)
-
-  console.log('SEED AFTER GENPAT', nextSeed)
 
   return [{
     firstName,
@@ -92,14 +84,14 @@ const generateSubscriber = _curry4(function generateSubscriber (tables, opts, pa
     return [amend(
       omit(['memberID', 'accountNumber', 'age'], patient),
       { subscriberID: patient.memberID, groupNumber }
-    ), alea(seed).int32()]
+    ), alea(seed).quick()]
   }
 
   const [newPatient, patientSeed] = generatePatient(tables, opts, groupSeed)
 
   return [amend(
-    omit(['memberID', 'accountNumber', 'age'], newPatient,
-      { subscriberID: patient.memberID, groupNumber })), alea(patientSeed).int32()]
+    omit(['memberID', 'accountNumber', 'age'], newPatient),
+    { subscriberID: patient.memberID, groupNumber }), alea(patientSeed).quick()]
 })
 
 const generatePlan = _curry2(function generatePlan ({ planIDLens, planNames }, seed) {
@@ -237,55 +229,54 @@ function contractorio (userOpts = {}, userProcedural = {}) {
     dateFormat: 'Y-M-D',
     count: 1,
     matchPatient: false,
+    write: true,
     range: [2, 4],
     seed: alea(Math.random()).int32(),
     output: './output'
   }, userOpts)
-  const dateFn = randoDate(opts.dateFormat, config)
-  console.time('Generating Procedural ODC')
-  const today = new Date()
   let currSeed = opts.seed
+  const dateFn = randoDate(opts.dateFormat, config)
+  const today = new Date()
   const results = map(() => {
     const [[admitDate, dischargeDate], nextSeed] = randomPipe([
       dateFn,
       dateFn
     ], alea(currSeed).quick())
-
-    console.log('AFTER DATE SEED', nextSeed)
-
     const [patient, patientSeed] = generatePatient(config, opts, nextSeed)
+    const [[subscriber, plan, provider, facility, authorization], finalSeed] = randomPipe([
+      generateSubscriber(config, opts, patient),
+      generatePlan(config),
+      generateProvider(config),
+      generateFacility(config),
+      generateAuthorization(opts, config)
+    ], patientSeed)
 
-    console.log('PATIENT SEED', patientSeed)
-    // const [[subscriber, plan, provider, facility, authorization], finalSeed] = randomPipe([
-    //   generateSubscriber(config, opts, patient),
-    //   generatePlan(config),
-    //   generateProvider(config),
-    //   generateFacility(config),
-    //   generateAuthorization(opts, config)
-    // ], patientSeed)
-
-    // currSeed = finalSeed
+    currSeed = finalSeed
 
     return {
-      patient
-      // subscriber,
-      // payer: {
-      //   plan
-      // },
-      // provider,
-      // facility,
-      // encounter: {
-      //   admitDate: admitDate.date,
-      //   dischargeDate: dischargeDate.date
-      // },
-      // authorization
+      patient,
+      subscriber,
+      payer: {
+        plan
+      },
+      provider,
+      facility,
+      encounter: {
+        admitDate: admitDate.date,
+        dischargeDate: dischargeDate.date
+      },
+      authorization
     }
   }, range(0, opts.count))
 
-  fs.mkdirp(opts.output)
-    .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), { seed: opts.seed, results }))
-    .then(() => console.timeEnd('Generating Procedural ODC'))
-    .catch(console.error)
+  // Write the output to a json
+  if (opts.write) {
+    fs.mkdirp(opts.output)
+      .then(() => fs.writeJSON(path.join('output', `${today.getTime()}.json`), { seed: opts.seed, results }))
+      .catch(console.error)
+  }
+
+  return { seed: opts.seed, results }
 }
 
 module.exports = contractorio
